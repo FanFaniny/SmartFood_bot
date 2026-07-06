@@ -1,0 +1,68 @@
+# SmartFood — production deploy (VPS + Docker Compose + Caddy auto-HTTPS).
+# Перед запуском: cp .env.production.example .env и заполните значения.
+
+services:
+  api:
+    build:
+      context: .
+      target: api
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3000
+      DATABASE_URL: /data/smartfood.db
+      DB_AUTO_MIGRATE: "true"
+      API_BASE_URL: https://${DOMAIN}
+      CORS_ORIGIN: https://${DOMAIN}
+      MONOPAY_WEBHOOK_URL: https://${DOMAIN}/api/payments/monopay/webhook
+      ALLOW_INSECURE_TELEGRAM_AUTH: "false"
+      # Заглушка оплаты без реального MonoPay (тестовый стенд). Выключите, когда добавите MONOPAY_TOKEN.
+      ALLOW_DEV_PAYMENTS: ${ALLOW_DEV_PAYMENTS:-false}
+    volumes:
+      - sqlite-data:/data
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: .
+      target: bot
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      BOT_MODE: webhook
+      BOT_HOST: 0.0.0.0
+      BOT_PORT: 8081
+      API_INTERNAL_URL: http://api:3000
+      TELEGRAM_WEBHOOK_URL: https://${DOMAIN}/telegram/webhook
+    expose:
+      - "8081"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  caddy:
+    build:
+      context: .
+      target: caddy
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+      - bot
+    restart: unless-stopped
+
+volumes:
+  sqlite-data:
+  caddy-data:
+  caddy-config:

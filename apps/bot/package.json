@@ -1,0 +1,27 @@
+{
+  "name": "@smartfood/bot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/index.ts",
+    "build": "tsc --build",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@smartfood/config": "workspace:*",
+    "@smartfood/shared": "workspace:*",
+    "@smartfood/telegram": "workspace:*",
+    "grammy": "^1.36.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.4",
+    "typescript": "^5.7.3"
+  }
+}

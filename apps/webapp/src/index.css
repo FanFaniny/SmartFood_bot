@@ -1,0 +1,74 @@
+@import 'tailwindcss';
+
+:root {
+  --color-primary: #22c55e;
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+input[type='range'].range-input {
+  touch-action: pan-x;
+  cursor: pointer;
+  height: 1.75rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+input[type='range'].range-input::-webkit-slider-runnable-track {
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: #e5e7eb;
+}
+
+input[type='range'].range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.5625rem;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+
+@keyframes slideup {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

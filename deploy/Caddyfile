@@ -1,0 +1,28 @@
+# Caddy: статика Web App + reverse proxy до API и Telegram-вебхука.
+# Домен и (опционально) e-mail для ACME берутся из переменных оточення.
+
+{$DOMAIN} {
+	encode gzip
+
+	# API (той самий домен, шлях /api/*)
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+
+	# Health-check API
+	handle /health {
+		reverse_proxy api:3000
+	}
+
+	# Telegram webhook → бот
+	handle /telegram/webhook {
+		reverse_proxy bot:8081
+	}
+
+	# Telegram Mini App (SPA)
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

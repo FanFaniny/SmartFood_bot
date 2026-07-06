@@ -1,0 +1,17 @@
+// ЭТАП 1 (scaffold): корневой tsconfig с project references для monorepo.
+// Удалить этот комментарий после завершения этапа 1.
+//
+// ЗАДЕЛ НА ЭТАП 3–4: reference на packages/telegram (пакет создан досрочно).
+// Удалить этот комментарий после завершения этапов 3 и 4.
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/config" },
+    { "path": "packages/db" },
+    { "path": "packages/telegram" },
+    { "path": "apps/api" },
+    { "path": "apps/bot" },
+    { "path": "apps/webapp" }
+  ]
+}

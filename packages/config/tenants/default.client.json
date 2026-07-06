@@ -1,0 +1,33 @@
+{
+  "tenantId": "demo-cafe",
+  "venue": {
+    "name": "Demo Cafe",
+    "locale": "uk-UA",
+    "currency": "UAH"
+  },
+  "theme": {
+    "mode": "telegram",
+    "colors": {
+      "primary": "#22c55e",
+      "background": "#ffffff",
+      "surface": "#f8fafc",
+      "text": "#111827",
+      "hint": "#6b7280"
+    }
+  },
+  "loyalty": {
+    "earnRatePercent": 5,
+    "pointToUah": 0.1,
+    "maxSpendPercentOfOrder": 30
+  },
+  "payments": {
+    "provider": "monopay",
+    "enabled": true
+  },
+  "features": {
+    "loyalty": true,
+    "drinkOptions": true,
+    "staffTelegramFlow": true,
+    "payments": true
+  }
+}

@@ -1,0 +1,23 @@
+# Dependencies / build outputs (восстанавливаются внутри образа)
+**/node_modules
+**/dist
+**/build
+**/.turbo
+**/*.tsbuildinfo
+
+# Секреты и локальные данные
+.env
+.env.*
+!.env.production.example
+**/data
+*.db
+*.db-shm
+*.db-wal
+
+# VCS / IDE / прочее
+.git
+.gitignore
+.cursor
+.deploy-test
+coverage
+**/*.log

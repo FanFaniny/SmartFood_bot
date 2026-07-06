@@ -1,0 +1,33 @@
+{
+  "name": "@smartfood/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --build --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node dist/migrate-cli.js",
+    "db:seed": "node dist/seed-cli.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.5",
+    "drizzle-orm": "^0.44.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "drizzle-kit": "^0.31.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.3"
+  }
+}
