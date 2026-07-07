@@ -134,13 +134,12 @@ export function CartScreen({
           <input
             type="range"
             min={0}
-            max={maxSpendable}
+            max={maxSpendable ?? 100}
             step={1}
-            value={sliderValue}
-            onInput={(e) => {
-              const val = Number(e.currentTarget.value);
-              
-              setSliderValue(val); 
+            value={sliderValue ?? 0}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setSliderValue(val);
             }}
             className="range-input mt-2 w-full accent-[var(--color-primary)]"
           />
