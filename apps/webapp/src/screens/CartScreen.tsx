@@ -1,5 +1,5 @@
 import type { OrderPreviewRequest } from '@smartfood/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { LoyaltyPointsSlider } from '../components/LoyaltyPointsSlider';
 import { CenterState, PrimaryButton, Spinner } from '../components/ui';
@@ -7,8 +7,6 @@ import { useBootstrap, useCreateOrder, useOrderPreview } from '../hooks/queries'
 import { formatUah } from '../lib/format';
 import { haptic, openExternal } from '../lib/telegram';
 import { cartSubtotalCents, toCartItemsInput, useCart } from '../store/cart';
-
-const PREVIEW_POINTS_DEBOUNCE_MS = 300;
 
 export function CartScreen({
   onBackToMenu,
@@ -25,31 +23,8 @@ export function CartScreen({
 
   const [pointsForPreview, setPointsForPreview] = useState(0);
   const pointsForCheckoutRef = useRef(0);
-  const previewDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current);
-    };
-  }, []);
-
-  const schedulePreviewPointsUpdate = (points: number) => {
-    if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current);
-    previewDebounceRef.current = setTimeout(() => {
-      setPointsForPreview(points);
-      previewDebounceRef.current = null;
-    }, PREVIEW_POINTS_DEBOUNCE_MS);
-  };
-
-  const flushPreviewPointsUpdate = (points: number) => {
-    if (previewDebounceRef.current) {
-      clearTimeout(previewDebounceRef.current);
-      previewDebounceRef.current = null;
-    }
-    setPointsForPreview(points);
-  };
 
   const loyaltyEnabled = bootstrap.data?.tenant.features.loyalty ?? false;
   const balance = bootstrap.data?.loyalty?.pointsBalance ?? 0;
@@ -144,10 +119,9 @@ export function CartScreen({
         <LoyaltyPointsSlider
           max={maxSpendable}
           balance={balance}
-          onPreviewPointsChange={flushPreviewPointsUpdate}
+          onPreviewPointsChange={setPointsForPreview}
           onLivePointsChange={(points) => {
             pointsForCheckoutRef.current = points;
-            schedulePreviewPointsUpdate(points);
           }}
         />
       )}
