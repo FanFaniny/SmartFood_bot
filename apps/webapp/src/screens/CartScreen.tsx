@@ -143,15 +143,13 @@ export function CartScreen({
       {error && <p className="px-4 pt-3 text-center text-sm text-rose-600">{error}</p>}
 
       <div className="px-4 pt-4">
-        {preview.isLoading && !preview.data ? (
-          <Spinner />
-        ) : (
+        {true === true ?(
           <PrimaryButton onClick={handleCheckout} disabled={createOrder.isPending}>
             {createOrder.isPending
               ? 'Оформлюємо…'
               : `Оформити · ${formatUah(preview.data?.totalUahCents ?? localSubtotal)}`}
           </PrimaryButton>
-        )}
+        ) : (<Spinner />)}
       </div>
     </div>
   );
