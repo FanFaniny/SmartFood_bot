@@ -136,8 +136,12 @@ export function CartScreen({
             min={0}
             max={maxSpendable}
             step={1}
-            value={Math.min(sliderValue, maxSpendable)}
-            onInput={(e) => setSliderValue(Number(e.currentTarget.value))}
+            value={sliderValue}
+            onInput={(e) => {
+              const val = Number(e.currentTarget.value);
+              
+              setSliderValue(val); 
+            }}
             className="range-input mt-2 w-full accent-[var(--color-primary)]"
           />
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">Баланс: {balance} балів</p>

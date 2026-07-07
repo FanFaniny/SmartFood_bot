@@ -16,6 +16,10 @@ import { getInitDataRaw } from './telegram';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 
+export function getApiBaseUrl(): string {
+  return BASE_URL;
+}
+
 export interface PaymentInfo {
   invoiceId: string;
   pageUrl: string;
@@ -48,6 +52,10 @@ function devTelegramId(): string {
     localStorage.setItem(key, id);
   }
   return id;
+}
+
+export function getApiAuthHeaders(): Record<string, string> {
+  return authHeaders();
 }
 
 function authHeaders(): Record<string, string> {

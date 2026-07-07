@@ -5,6 +5,7 @@ import type { TelegramWebAppUser } from '@smartfood/telegram';
 
 import type { AppEnv } from './config/env.js';
 import type { AppServices } from './services/index.js';
+import type { CustomerEventHub } from './services/customerEventHub.js';
 
 export interface StaffContext {
   telegramId: string;
@@ -19,6 +20,7 @@ declare module 'fastify' {
     tenantConfig: TenantConfig;
     tenantId: string;
     services: AppServices;
+    eventHub: CustomerEventHub;
   }
 
   interface FastifyRequest {

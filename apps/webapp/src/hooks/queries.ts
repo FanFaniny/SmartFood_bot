@@ -1,39 +1,12 @@
-import type { CreateOrderRequest, Order, OrderPreviewRequest, OrderWithItems } from '@smartfood/shared';
-import { OrderStatus } from '@smartfood/shared';
-import type { Query } from '@tanstack/react-query';
+import type { CreateOrderRequest, OrderPreviewRequest } from '@smartfood/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '../lib/api';
-
-const PENDING_PAYMENT_POLL_MS = 3_000;
-const LIVE_ORDER_POLL_MS = 15_000;
 
 const orderQueryOptions = {
   staleTime: 0,
   refetchOnWindowFocus: true,
 } as const;
-
-function hasPendingPayment(orders: Order[] | undefined): boolean {
-  return orders?.some((o) => o.status === OrderStatus.PENDING_PAYMENT) ?? false;
-}
-
-function ordersPollInterval(query: Query<Order[], Error>): number | false {
-  return hasPendingPayment(query.state.data) ? PENDING_PAYMENT_POLL_MS : false;
-}
-
-function orderPollInterval(query: Query<OrderWithItems, Error>): number | false {
-  const status = query.state.data?.status;
-  if (!status) return false;
-  if (status === OrderStatus.PENDING_PAYMENT) return PENDING_PAYMENT_POLL_MS;
-  if (
-    status === OrderStatus.PAID ||
-    status === OrderStatus.ACCEPTED ||
-    status === OrderStatus.PREPARING
-  ) {
-    return LIVE_ORDER_POLL_MS;
-  }
-  return false;
-}
 
 export function useBootstrap() {
   return useQuery({ queryKey: ['bootstrap'], queryFn: api.bootstrap });
@@ -48,8 +21,6 @@ export function useOrders() {
     queryKey: ['orders'],
     queryFn: api.listOrders,
     ...orderQueryOptions,
-    refetchInterval: ordersPollInterval,
-    refetchIntervalInBackground: true,
   });
 }
 
@@ -59,8 +30,6 @@ export function useOrder(id: string | null) {
     queryFn: () => api.getOrder(id as string),
     enabled: Boolean(id),
     ...orderQueryOptions,
-    refetchInterval: orderPollInterval,
-    refetchIntervalInBackground: true,
   });
 }
 

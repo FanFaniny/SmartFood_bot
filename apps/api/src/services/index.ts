@@ -2,6 +2,7 @@ import type { DatabaseClient } from '@smartfood/db';
 import type { FastifyBaseLogger } from 'fastify';
 
 import type { AppEnv } from '../config/env.js';
+import { createCustomerEventHub, type CustomerEventHub } from './customerEventHub.js';
 import { createLoyaltyService, type LoyaltyService } from './loyaltyService.js';
 import { createOrderService, type OrderService } from './orderService.js';
 import { createPaymentService, type PaymentService } from './paymentService.js';
@@ -12,14 +13,16 @@ export interface AppServices {
   payment: PaymentService;
   notify: TelegramNotifyService;
   order: OrderService;
+  eventHub: CustomerEventHub;
 }
 
 export function buildServices(env: AppEnv, db: DatabaseClient, log: FastifyBaseLogger): AppServices {
+  const eventHub = createCustomerEventHub();
   const loyalty = createLoyaltyService(db);
   const payment = createPaymentService(env, log);
   const notify = createTelegramNotifyService(env, log);
-  const order = createOrderService({ db, loyalty, payment, notify, log });
-  return { loyalty, payment, notify, order };
+  const order = createOrderService({ db, loyalty, payment, notify, eventHub, log });
+  return { loyalty, payment, notify, order, eventHub };
 }
 
-export type { LoyaltyService, OrderService, PaymentService, TelegramNotifyService };
+export type { CustomerEventHub, LoyaltyService, OrderService, PaymentService, TelegramNotifyService };

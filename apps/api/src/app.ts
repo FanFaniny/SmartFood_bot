@@ -18,6 +18,7 @@ import { telegramAuth } from './middleware/telegramAuth.js';
 import { createDb, registerDb } from './plugins/db.js';
 import { registerErrorHandler } from './plugins/errors.js';
 import { registerBootstrapRoutes } from './routes/bootstrap.js';
+import { registerEventRoutes } from './routes/events.js';
 import { registerLoyaltyRoutes } from './routes/loyalty.js';
 import { registerMenuRoutes } from './routes/menu.js';
 import { registerOrderRoutes } from './routes/orders.js';
@@ -102,6 +103,7 @@ export async function buildApp(env: AppEnv): Promise<FastifyInstance> {
   await syncStaffMembers(app);
 
   app.decorate('services', buildServices(env, db, app.log));
+  app.decorate('eventHub', app.services.eventHub);
 
   const customerPreHandler = [telegramAuth(app), customerContext(app)];
   const staffPreHandler = [staffAuth(app)];
@@ -113,6 +115,7 @@ export async function buildApp(env: AppEnv): Promise<FastifyInstance> {
   registerOrderRoutes(app, customerPreHandler);
   registerLoyaltyRoutes(app, customerPreHandler);
   registerPaymentRoutes(app, customerPreHandler);
+  registerEventRoutes(app, customerPreHandler);
   registerStaffRoutes(app, staffPreHandler);
 
   app.log.info(

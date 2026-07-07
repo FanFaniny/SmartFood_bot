@@ -37,12 +37,14 @@ import {
 } from './loyaltyService.js';
 import type { InvoiceResult, PaymentService } from './paymentService.js';
 import type { TelegramNotifyService } from './telegramNotifyService.js';
+import type { CustomerEventHub } from './customerEventHub.js';
 
 export interface OrderServiceDeps {
   db: DatabaseClient;
   loyalty: LoyaltyService;
   payment: PaymentService;
   notify: TelegramNotifyService;
+  eventHub: CustomerEventHub;
   log: FastifyBaseLogger;
 }
 
@@ -106,7 +108,20 @@ function mapItemRow(row: typeof orderItems.$inferSelect): OrderItem {
 }
 
 export function createOrderService(deps: OrderServiceDeps) {
-  const { db, loyalty, payment, notify, log } = deps;
+  const { db, loyalty, payment, notify, eventHub, log } = deps;
+
+  function publishOrderUpdated(customerId: string, order: Order): void {
+    eventHub.publish(customerId, { type: 'order.updated', order });
+  }
+
+  function publishLoyaltyUpdated(customerId: string): void {
+    eventHub.publish(customerId, { type: 'loyalty.updated' });
+  }
+
+  function publishOrderAndLoyalty(customerId: string, order: Order): void {
+    publishOrderUpdated(customerId, order);
+    publishLoyaltyUpdated(customerId);
+  }
 
   async function addEvent(
     exec: Executor,
@@ -267,6 +282,7 @@ export function createOrderService(deps: OrderServiceDeps) {
         { orderId, customerId: paid.customerId, totalUahCents: paid.totalUahCents, pointsEarned: paid.loyaltyPointsEarned },
         '[order] paid & finalized',
       );
+      publishOrderAndLoyalty(paid.customerId, paid);
       await notify.notifyStaffNewOrder(paid, finalItems, config);
     } else {
       log.debug({ orderId }, '[order] finalizePaidOrder skipped (already paid)');
@@ -504,7 +520,7 @@ export function createOrderService(deps: OrderServiceDeps) {
       orderId: string,
       config: TenantConfig,
     ): Promise<Order> {
-      return db.transaction(async (tx: Tx) => {
+      const cancelled = await db.transaction(async (tx: Tx) => {
         const rows = await tx
           .select()
           .from(orders)
@@ -533,6 +549,9 @@ export function createOrderService(deps: OrderServiceDeps) {
         log.info({ orderId, customerId, fromStatus: row.status }, '[order] cancelled by customer');
         return mapOrderRow({ ...row, status: OrderStatus.CANCELLED, updatedAt: now });
       });
+
+      publishOrderAndLoyalty(customerId, cancelled);
+      return cancelled;
     },
 
     /** Обработка вебхука оплаты (вызывается из payments route). */
@@ -556,8 +575,8 @@ export function createOrderService(deps: OrderServiceDeps) {
       }
 
       if (status === PaymentStatus.FAILED) {
-        await db.transaction(async (tx: Tx) => {
-          if (row.paymentStatus === PaymentStatus.PAID) return;
+        const failedOrder = await db.transaction(async (tx: Tx) => {
+          if (row.paymentStatus === PaymentStatus.PAID) return null;
           await refundSpentAndEarned(tx, row, config);
           const now = new Date().toISOString();
           await tx
@@ -571,7 +590,15 @@ export function createOrderService(deps: OrderServiceDeps) {
             eventType: OrderEventType.PAYMENT_FAILED,
           });
           log.warn({ orderId: row.id, invoiceId }, '[order] payment failed');
+          return mapOrderRow({
+            ...row,
+            status: OrderStatus.PAYMENT_FAILED,
+            paymentStatus: PaymentStatus.FAILED,
+            updatedAt: now,
+          });
         });
+
+        if (failedOrder) publishOrderAndLoyalty(failedOrder.customerId, failedOrder);
       }
     },
 
@@ -637,6 +664,10 @@ export function createOrderService(deps: OrderServiceDeps) {
         const shortId = updated.id.slice(0, 8);
         await notify.notifyCustomer(telegramId, `${messages[action]}\n#${shortId}`);
       }
+
+      publishOrderUpdated(updated.customerId, updated);
+      if (action === 'cancel') publishLoyaltyUpdated(updated.customerId);
+
       return updated;
     },
   };

@@ -7,7 +7,7 @@ import { CartButton } from './components/CartButton';
 import { ProductSheet } from './components/ProductSheet';
 import { TabBar, type Tab } from './components/TabBar';
 import { useBootstrap } from './hooks/queries';
-import { useRefetchOrdersOnVisible } from './hooks/useRefetchOrdersOnVisible';
+import { useCustomerEvents } from './hooks/useCustomerEvents';
 import { cartCount, cartSubtotalCents, useCart } from './store/cart';
 import { hideBackButton, showBackButton, tg } from './lib/telegram';
 import { CartScreen } from './screens/CartScreen';
@@ -40,7 +40,7 @@ function applyTheme(theme: ThemeConfig | undefined): void {
 
 export function App() {
   const bootstrap = useBootstrap();
-  useRefetchOrdersOnVisible();
+  useCustomerEvents();
   const lines = useCart((s) => s.lines);
   const [view, setView] = useState<View>('menu');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
