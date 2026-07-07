@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import type { ChangeEvent, KeyboardEvent, PointerEvent, ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function Spinner() {
   return (
@@ -77,20 +78,58 @@ export function RangeSlider({
   onCommit?: (value: number) => void;
   className?: string;
 }) {
-  const commit = (e: React.PointerEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-    onCommit?.(Number(e.currentTarget.value));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const draggingRef = useRef(false);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input || draggingRef.current) return;
+    input.value = String(value);
+  }, [value]);
+
+  const handlePointerDown = (e: PointerEvent<HTMLInputElement>) => {
+    draggingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerUp = (e: PointerEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    if (input.hasPointerCapture(e.pointerId)) {
+      input.releasePointerCapture(e.pointerId);
+    }
+    draggingRef.current = false;
+    const next = Number(input.value);
+    onChange(next);
+    onCommit?.(next);
+  };
+
+  const handlePointerCancel = () => {
+    draggingRef.current = false;
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onChange(Number(e.target.value));
+  };
+
+  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
+    const next = Number(e.currentTarget.value);
+    onChange(next);
+    onCommit?.(next);
   };
 
   return (
     <input
+      ref={inputRef}
       type="range"
       min={min}
       max={max}
       step={1}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      onPointerUp={commit}
-      onKeyUp={commit}
+      defaultValue={value}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onChange={handleChange}
+      onKeyUp={handleKeyUp}
       className={`range-input w-full accent-[var(--color-primary)] ${className ?? ''}`}
     />
   );
