@@ -67,14 +67,20 @@ export function RangeSlider({
   max,
   value,
   onChange,
+  onCommit,
   className,
 }: {
   min?: number;
   max: number;
   value: number;
   onChange: (value: number) => void;
+  onCommit?: (value: number) => void;
   className?: string;
 }) {
+  const commit = (e: React.PointerEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    onCommit?.(Number(e.currentTarget.value));
+  };
+
   return (
     <input
       type="range"
@@ -83,6 +89,8 @@ export function RangeSlider({
       step={1}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
+      onPointerUp={commit}
+      onKeyUp={commit}
       className={`range-input w-full accent-[var(--color-primary)] ${className ?? ''}`}
     />
   );

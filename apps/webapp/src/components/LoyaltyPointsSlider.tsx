@@ -16,15 +16,6 @@ export function LoyaltyPointsSlider({
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => onPreviewPointsChange(value), 100);
-    return () => window.clearTimeout(timer);
-  }, [value, onPreviewPointsChange]);
-
-  useEffect(() => {
-    onLivePointsChange(value);
-  }, [value, onLivePointsChange]);
-
-  useEffect(() => {
     setValue((current) => Math.min(current, max));
   }, [max]);
 
@@ -36,7 +27,16 @@ export function LoyaltyPointsSlider({
           {value} / {max}
         </span>
       </div>
-      <RangeSlider max={max} value={value} onChange={setValue} className="mt-2" />
+      <RangeSlider
+        max={max}
+        value={value}
+        onChange={(v) => {
+          setValue(v);
+          onLivePointsChange(v);
+        }}
+        onCommit={onPreviewPointsChange}
+        className="mt-2"
+      />
       <p className="mt-1 text-xs text-[var(--color-text-muted)]">Баланс: {balance} балів</p>
     </div>
   );
