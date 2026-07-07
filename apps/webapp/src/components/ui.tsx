@@ -80,6 +80,10 @@ export function RangeSlider({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const draggingRef = useRef(false);
+  const onChangeRef = useRef(onChange);
+  const onCommitRef = useRef(onCommit);
+  onChangeRef.current = onChange;
+  onCommitRef.current = onCommit;
 
   useEffect(() => {
     const input = inputRef.current;
@@ -92,6 +96,11 @@ export function RangeSlider({
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
+  const handlePointerMove = (e: PointerEvent<HTMLInputElement>) => {
+    if (!draggingRef.current) return;
+    onChangeRef.current(Number(e.currentTarget.value));
+  };
+
   const handlePointerUp = (e: PointerEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
     if (input.hasPointerCapture(e.pointerId)) {
@@ -99,8 +108,8 @@ export function RangeSlider({
     }
     draggingRef.current = false;
     const next = Number(input.value);
-    onChange(next);
-    onCommit?.(next);
+    onChangeRef.current(next);
+    onCommitRef.current?.(next);
   };
 
   const handlePointerCancel = () => {
@@ -108,13 +117,14 @@ export function RangeSlider({
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange(Number(e.target.value));
+    if (draggingRef.current) return;
+    onChangeRef.current(Number(e.target.value));
   };
 
   const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
     const next = Number(e.currentTarget.value);
-    onChange(next);
-    onCommit?.(next);
+    onChangeRef.current(next);
+    onCommitRef.current?.(next);
   };
 
   return (
@@ -126,6 +136,7 @@ export function RangeSlider({
       step={1}
       defaultValue={value}
       onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       onChange={handleChange}
