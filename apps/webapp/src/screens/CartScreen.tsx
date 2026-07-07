@@ -1,7 +1,8 @@
 import type { OrderPreviewRequest } from '@smartfood/shared';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
-import { CenterState, PrimaryButton, RangeSlider, Spinner } from '../components/ui';
+import { LoyaltyPointsSlider } from '../components/LoyaltyPointsSlider';
+import { CenterState, PrimaryButton, Spinner } from '../components/ui';
 import { useBootstrap, useCreateOrder, useOrderPreview } from '../hooks/queries';
 import { formatUah } from '../lib/format';
 import { haptic, openExternal } from '../lib/telegram';
@@ -20,31 +21,22 @@ export function CartScreen({
   const bootstrap = useBootstrap();
   const createOrder = useCreateOrder();
 
-  const [sliderValue, setSliderValue] = useState(0);
-  const [debouncedPoints, setDebouncedPoints] = useState(0);
+  const [pointsForPreview, setPointsForPreview] = useState(0);
+  const pointsForCheckoutRef = useRef(0);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const loyaltyEnabled = bootstrap.data?.tenant.features.loyalty ?? false;
   const balance = bootstrap.data?.loyalty?.pointsBalance ?? 0;
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedPoints(sliderValue), 100);
-    return () => window.clearTimeout(timer);
-  }, [sliderValue]);
-
   const previewBody = useMemo<OrderPreviewRequest>(
-    () => ({ items: toCartItemsInput(lines), pointsToSpend: debouncedPoints }),
-    [lines, debouncedPoints],
+    () => ({ items: toCartItemsInput(lines), pointsToSpend: pointsForPreview }),
+    [lines, pointsForPreview],
   );
   const preview = useOrderPreview(previewBody, lines.length > 0);
 
   const localSubtotal = cartSubtotalCents(lines);
   const maxSpendable = preview.data?.maxLoyaltyPointsSpendable ?? 0;
-
-  useEffect(() => {
-    setSliderValue((value) => Math.min(value, maxSpendable));
-  }, [maxSpendable]);
 
   if (lines.length === 0) {
     return (
@@ -63,7 +55,7 @@ export function CartScreen({
     try {
       const result = await createOrder.mutateAsync({
         items: toCartItemsInput(lines),
-        pointsToSpend: sliderValue,
+        pointsToSpend: pointsForCheckoutRef.current,
         ...(note.trim() ? { customerNote: note.trim() } : {}),
       });
       haptic('success');
@@ -123,22 +115,15 @@ export function CartScreen({
         />
       </div>
 
-      {loyaltyEnabled && balance > 0 && (
-        <div className="mx-4 mt-4 rounded-2xl bg-[var(--color-surface)] p-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Списати бали</span>
-            <span className="text-[var(--color-text-muted)]">
-              {sliderValue} / {maxSpendable}
-            </span>
-          </div>
-          <RangeSlider
-            max={maxSpendable}
-            value={sliderValue}
-            onChange={setSliderValue}
-            className="mt-2"
-          />
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">Баланс: {balance} балів</p>
-        </div>
+      {loyaltyEnabled && balance > 0 && maxSpendable > 0 && (
+        <LoyaltyPointsSlider
+          max={maxSpendable}
+          balance={balance}
+          onPreviewPointsChange={setPointsForPreview}
+          onLivePointsChange={(points) => {
+            pointsForCheckoutRef.current = points;
+          }}
+        />
       )}
 
       <div className="mx-4 mt-4 flex flex-col gap-1.5 rounded-2xl bg-[var(--color-surface)] p-4 text-sm">
