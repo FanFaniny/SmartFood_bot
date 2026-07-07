@@ -1,7 +1,7 @@
 import type { OrderPreviewRequest } from '@smartfood/shared';
 import { useEffect, useMemo, useState } from 'react';
 
-import { CenterState, PrimaryButton, Spinner } from '../components/ui';
+import { CenterState, PrimaryButton, RangeSlider, Spinner } from '../components/ui';
 import { useBootstrap, useCreateOrder, useOrderPreview } from '../hooks/queries';
 import { formatUah } from '../lib/format';
 import { haptic, openExternal } from '../lib/telegram';
@@ -131,17 +131,11 @@ export function CartScreen({
               {sliderValue} / {maxSpendable}
             </span>
           </div>
-          <input
-            type="range"
-            min={0}
-            max={maxSpendable ?? 100}
-            step={1}
-            value={sliderValue ?? 0}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              setSliderValue(val);
-            }}
-            className="range-input mt-2 w-full accent-[var(--color-primary)]"
+          <RangeSlider
+            max={maxSpendable}
+            value={sliderValue}
+            onChange={setSliderValue}
+            className="mt-2"
           />
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">Баланс: {balance} балів</p>
         </div>

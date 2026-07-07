@@ -61,3 +61,29 @@ export function PrimaryButton({
     </button>
   );
 }
+
+export function RangeSlider({
+  min = 0,
+  max,
+  value,
+  onChange,
+  className,
+}: {
+  min?: number;
+  max: number;
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+}) {
+  return (
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={1}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className={`range-input w-full accent-[var(--color-primary)] ${className ?? ''}`}
+    />
+  );
+}
