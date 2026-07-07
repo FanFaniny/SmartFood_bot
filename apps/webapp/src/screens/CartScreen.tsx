@@ -123,7 +123,7 @@ export function CartScreen({
         />
       </div>
 
-      {loyaltyEnabled && balance > 0 && maxSpendable > 0 && (
+      {loyaltyEnabled && balance > 0 && (
         <div className="mx-4 mt-4 rounded-2xl bg-[var(--color-surface)] p-4">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium">Списати бали</span>
